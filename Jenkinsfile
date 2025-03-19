@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker build -t ${DOCKER_IMAGE}:${APP_VERSION} .
+                    docker build -t ${DOCKER_IMAGE}:${APP_VERSION} frontend/
                     docker login -u pulipatitejashwini -p Npnt@2412
                     docker push ${DOCKER_IMAGE}:${APP_VERSION}
                     """
