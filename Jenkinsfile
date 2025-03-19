@@ -11,13 +11,12 @@ pipeline {
         stage('Extract Version') {
             steps {
                 script {
-                    def packageJson = readJSON file: 'package.json'
+                    def packageJson = readJSON file: 'frontend/package.json'
                     env.APP_VERSION = packageJson.version
                     echo "${APP_VERSION}"
                 }
             }
         }
-
         stage('Build and Push Docker Image') {
             steps {
                 script {
