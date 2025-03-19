@@ -46,7 +46,7 @@ pipeline {
                     docker pull ${DOCKER_IMAGE}:${APP_VERSION} &&
                     docker stop chat-fe || true &&
                     docker rm chat-fe || true &&
-                    docker run -d --name chat-fe -p 80:80 ${DOCKER_IMAGE}:${APP_VERSION}
+                    docker run -d --name chatapp-fe -p 80:80 ${DOCKER_IMAGE}:${APP_VERSION}
                     "
                     """
                 }
