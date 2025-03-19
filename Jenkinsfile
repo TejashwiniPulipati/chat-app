@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent docker
 
     stages {
         stage('code-analysis') {
@@ -26,7 +26,7 @@ pipeline {
                     echo 'logging into docker and pushing code to docker hub'
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'password', usernameVariable: 'user')]) {
                     sh 'sudo docker login -u ${user} -p ${password}'
-                    
+
                     sh 'sudo docker push pulipatitejashwini/chatapp1-fe/${packageJSONVersion}'
                     }
                 }
