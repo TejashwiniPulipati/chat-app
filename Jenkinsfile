@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE1 = "pulipatitejashwini/chat-be"
-        DOCKER_IMAGE2 = "pulipatitejashwini/chat-fe"
+        DOCKER_IMAGE1 = "node"
+        DOCKER_IMAGE2 = "nginx"
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
         DOCKER_SERVER = "18.134.226.211"
     }
@@ -38,12 +38,8 @@ pipeline {
                     sh """
                     ssh ${DOCKER_SERVER} "
                     docker pull ${DOCKER_IMAGE1}:${APP_VERSION} &&
-                    docker stop chat-be || true &&
-                    docker rm chat-be || true &&
-                    docker run -d --name chatapp-fe -p 80:80 ${DOCKER_IMAGE1}:${APP_VERSION}
+                    docker run -d --name chatapp-fe -p 8081:8080 ${DOCKER_IMAGE1}:${APP_VERSION}
                     docker pull ${DOCKER_IMAGE2}:${APP_VERSION} &&
-                    docker stop chat-fe || true &&
-                    docker rm chat-fe || true &&
                     docker run -d --name chatapp-fe -p 80:80 ${DOCKER_IMAGE2}:${APP_VERSION}
                     "
                     """
