@@ -1,36 +1,54 @@
 pipeline {
-    agent {
-        docker { image 'nginx' }  
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "pulipatitejashwini/chat-fe"
+        REGISTRY_CREDENTIALS = "dockerhub-credentials"
+        DOCKER_SERVER = "18.134.226.211"
     }
 
     stages {
         stage('code-analysis') {
             steps {
                 echo 'Sonar Analysis Started'
-                sh 'cd frontend && sudo docker run --rm -e SONAR_HOST_URL="http://http://13.40.165.118:9000" -v ".:/usr/src" -e SONAR_TOKEN="sqp_cdb02aa58a3991153ea552ba063588526579f0f1" sonarsource/sonar-scanner-cli -Dsonar.projectKey=chat-app'
+                sh 'cd frontend && sudo docker run --rm -e SONAR_HOST_URL="http://3.9.144.17/:9000" -v ".:/usr/src" -e SONAR_TOKEN="sqp_50dcba785b5e21ff5b4090d0e707d6ece87efdb" sonarsource/sonar-scanner-cli -Dsonar.projectKey=chatapp'
                 echo 'Sonar Analysis Completed'
             }
         }
-        stage('build containers') {
+
+        stage('Extract Version') {
             steps {
                 script {
-                    def packageJson = readJSON file: 'chat-app/package.json'
-                    def packageJSONVersion = packageJson.version
-                    echo "${packageJSONVersion}"
-                    sh 'cd chat-app/frontend && docker build -t pulipatitejashwini/chatapp1-be/${packageJSONVersion} .'
-                    sh 'docker container run -dt --name chatapp-backend -p 80:80 pulipatitejashwini/chatapp1-be/${packageJSONVersion}'
+                    def packageJson = readJSON file: 'package.json'
+                    env.APP_VERSION = packageJson.version
+                    echo "${APP_VERSION}"
                 }
             }
         }
-        stage('docker login') {
+
+        stage('Build and Push Docker Image') {
             steps {
                 script {
-                    echo 'logging into docker and pushing code to docker hub'
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'password', usernameVariable: 'user')]) {
-                    sh 'sudo docker login -u ${user} -p ${password}'
+                    sh """
+                    docker build -t ${DOCKER_IMAGE}:${APP_VERSION} .
+                    docker login -u pulipatitejashwini -p Npnt@2412
+                    docker push ${DOCKER_IMAGE}:${APP_VERSION}
+                    """
+                }
+            }
+        }
 
-                    sh 'sudo docker push pulipatitejashwini/chatapp1-fe/${packageJSONVersion}'
-                    }
+        stage('Deploy on Docker Server') {
+            steps {
+                script {
+                    sh """
+                    ssh ${DOCKER_SERVER} "
+                    docker pull ${DOCKER_IMAGE}:${APP_VERSION} &&
+                    docker stop chat-fe || true &&
+                    docker rm chat-fe || true &&
+                    docker run -d --name chat-fe -p 80:80 ${DOCKER_IMAGE}:${APP_VERSION}
+                    "
+                    """
                 }
             }
         }
