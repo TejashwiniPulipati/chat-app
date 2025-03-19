@@ -9,30 +9,30 @@ pipeline {
                 echo 'Sonar Analysis Completed'
             }
         }
-    }
-    stage('build containers') {
-        steps {
-            script {
-                def packageJson = readJSON file: 'chat-app/backend/package.json'
-                def packageJSONVersion = packageJson.version
-                echo "${packageJSONVersion}"
-                sh 'cd chat-app/backend && docker build -t pulipatitejashwini/chatapp1-be/${packageJSONVersion} .'
-                sh 'docker container run -dt --name chatapp-backend -p 8081:8080 pulipatitejashwini/chatapp1-be/${packageJSONVersion}'
-                sh 'cd chat-app/frontend && docker build -t pulipatitejashwini/chatapp1-be/${packageJSONVersion} .'
-                sh 'docker container run -dt --name chatapp-backend -p 80:80 pulipatitejashwini/chatapp1-be/${packageJSONVersion}'
+        stage('build containers') {
+            steps {
+                script {
+                    def packageJson = readJSON file: 'chat-app/backend/package.json'
+                    def packageJSONVersion = packageJson.version
+                    echo "${packageJSONVersion}"
+                    sh 'cd chat-app/backend && docker build -t pulipatitejashwini/chatapp1-be/${packageJSONVersion} .'
+                    sh 'docker container run -dt --name chatapp-backend -p 8081:8080 pulipatitejashwini/chatapp1-be/${packageJSONVersion}'
+                    sh 'cd chat-app/frontend && docker build -t pulipatitejashwini/chatapp1-be/${packageJSONVersion} .'
+                    sh 'docker container run -dt --name chatapp-backend -p 80:80 pulipatitejashwini/chatapp1-be/${packageJSONVersion}'
+                }
+            }
+        }
+        stage('docker login') {
+            steps {
+                script {
+                    echo 'logging into docker and pushing code to docker hub'
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'password', usernameVariable: 'user')]) {
+                    sh 'sudo docker login -u ${user} -p ${password}'
+                    sh 'sudo docker push pulipatitejashwini/chatapp1-be/${packageJSONVersion}'
+                    sh 'sudo docker push pulipatitejashwini/chatapp1-fe/${packageJSONVersion}'
+                    }
+                }
             }
         }
     }
-    stage('docker login') {
-        steps {
-            script {
-                echo 'logging into docker and pushing code to docker hub'
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'password', usernameVariable: 'user')]) {
-                sh 'sudo docker login -u ${user} -p ${password}'
-                sh 'sudo docker push pulipatitejashwini/chatapp1-be/${packageJSONVersion}'
-                sh 'sudo docker push pulipatitejashwini/chatapp1-fe/${packageJSONVersion}'
-                }
-            }
-       }
-   }
 }
