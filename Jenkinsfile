@@ -1,5 +1,7 @@
 pipeline {
-    agent docker
+    agent {
+        docker { image 'nginx' }  
+    }
 
     stages {
         stage('code-analysis') {
