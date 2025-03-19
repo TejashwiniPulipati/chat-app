@@ -22,11 +22,11 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker build -t ${DOCKER_IMAGE1}:${APP_VERSION} backend/
-                    docker build -t ${DOCKER_IMAGE2}:${APP_VERSION} frontend/
+                    docker build -t pulipatitejashwini-be:${APP_VERSION} backend/
+                    docker build -t pulipatitejashwini-fe:${APP_VERSION} frontend/
                     docker login -u pulipatitejashwini -p Npnt@2412
-                    docker push ${DOCKER_IMAGE1}:${APP_VERSION}
-                    docker push ${DOCKER_IMAGE2}:${APP_VERSION}
+                    docker push pulipatitejashwini-be:${APP_VERSION}
+                    docker push pulipatitejashwini-fe:${APP_VERSION}
                     """
                 }
             }
@@ -37,9 +37,9 @@ pipeline {
                 script {
                     sh """
                     ssh ${DOCKER_SERVER} "
-                    docker pull ${DOCKER_IMAGE1}:${APP_VERSION} &&
+                    docker pull pulipatitejashwini-be:${APP_VERSION} &&
                     docker run -d --name chatapp-fe -p 8081:8080 ${DOCKER_IMAGE1}:${APP_VERSION}
-                    docker pull ${DOCKER_IMAGE2}:${APP_VERSION} &&
+                    docker pull pulipatitejashwini-be:${APP_VERSION} &&
                     docker run -d --name chatapp-fe -p 80:80 ${DOCKER_IMAGE2}:${APP_VERSION}
                     "
                     """
