@@ -11,7 +11,7 @@ pipeline {
         stage('code-analysis') {
             steps {
                 echo 'Sonar Analysis Started'
-                sh 'cd frontend && docker run --rm -e SONAR_HOST_URL="http://3.9.144.17/:9000" -v ".:/usr/src" -e SONAR_TOKEN="sqp_50dcba785b5e21ff5b4090d0e707d6ece87efdb" sonarsource/sonar-scanner-cli -Dsonar.projectKey=chatapp'
+                sh 'cd frontend && docker run --rm -e SONAR_HOST_URL="http://3.9.144.17:9000" -v ".:/usr/src" -e SONAR_TOKEN="sqp_50dcba785b5e21ff5b4090d0e707d6ece87efdb" sonarsource/sonar-scanner-cli -Dsonar.projectKey=chatapp'
                 echo 'Sonar Analysis Completed'
             }
         }
