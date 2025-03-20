@@ -2,6 +2,8 @@ pipeline {
     agent any
 
     environment {
+        BACKEND_ENV_FILE = "backend/.environment"
+        FRONTEND_ENV_FILE = "frontend/.environment"
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
     }
 
@@ -41,11 +43,24 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker container run -dt --name chatapp-db -p 5432:5432 postgres
-                    docker pull pulipatitejashwini/chatapp-be:${APP_VERSION} 
-                    docker container run -dt --name chatapp-be -p 8081:8080 pulipatitejashwini/chatapp-be:${APP_VERSION}
-                    docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION} 
-                    docker container run -dt --name chatapp-fe -p 80:80 pulipatitejashwini/chatapp-fe:${APP_VERSION}
+                    docker network create chatapp-network || true
+
+                    docker container rm -f chatapp-db || true
+                    docker run -dt --name chatapp-db -p 5432:5432 \
+                        -e POSTGRES_USER=postgres \
+                        -e POSTGRES_PASSWORD=lms@12345 \
+                        -e POSTGRES_DB=chatappdb \
+                        --network chatapp-network postgres
+
+                    docker pull pulipatitejashwini/chatapp-be:${APP_VERSION}
+                    docker container rm -f chatapp-be || true
+                    docker run -dt --name chatapp-be -p 8081:8080 --env-file=${BACKEND_ENV_FILE} \
+                        --network chatapp-network pulipatitejashwini/chatapp-be:${APP_VERSION}
+
+                    docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION}
+                    docker container rm -f chatapp-fe || true
+                    docker run -dt --name chatapp-fe -p 80:80 --env-file=${FRONTEND_ENV_FILE} \
+                        --network chatapp-network pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
                 }
             }
