@@ -18,21 +18,17 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    sh """
-                    docker build -t pulipatitejashwini/chatapp-be:${APP_VERSION} backend/
-                    docker build -t pulipatitejashwini/chatapp-fe:${APP_VERSION} frontend/
-
                     // credentialsId: 'dockerhub-credentials' refers to the ID of the stored credentials in Jenkins.
                     // usernameVariable: 'DOCKER_USER' stores the Docker Hub username in DOCKER_USER.
                     // passwordVariable: 'DOCKER_PASS' stores the password in DOCKER_PASS.
                     // sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                     // echo $DOCKER_PASS prints the password (without displaying it in logs).
                     // docker login -u $DOCKER_USER --password-stdin securely logs into Docker Hub using --password-stdin (recommended by Docker).
-
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) 
-                    {
-                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                    }
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker build -t pulipatitejashwini/chatapp-be:${APP_VERSION} backend/
+                    docker build -t pulipatitejashwini/chatapp-fe:${APP_VERSION} frontend/
                     docker push pulipatitejashwini/chatapp-be:${APP_VERSION}
                     docker push pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
