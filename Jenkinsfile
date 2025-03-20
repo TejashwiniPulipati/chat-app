@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         BACKEND_ENV_FILE = "backend/.environment"
+        FRONTEND_ENV_FILE = "frontend/.environment"
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
     }
 
@@ -60,7 +61,7 @@ pipeline {
                     docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     docker container rm -f chatapp-fe || true
                     docker run -dt --name chatapp-fe -p 80:80 \
-                        -e REACT_APP_API_URL=http://chatapp-be:8080 \ 
+                        -env-file=${FRONTEND_ENV_FILE}  \ 
                         --network chatapp-network pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
                 }
