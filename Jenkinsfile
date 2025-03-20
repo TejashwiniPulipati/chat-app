@@ -2,8 +2,6 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE1 = "node:14"
-        DOCKER_IMAGE2 = "nginx"
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
     }
 
