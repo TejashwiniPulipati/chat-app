@@ -43,7 +43,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker network rm -f chatapp-db || true
+                    docker network rm -f chatapp-network || true
                     docker network create chatapp-network 
 
                     docker container rm -f chatapp-db || true
