@@ -59,7 +59,7 @@ pipeline {
 
                     docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     docker container rm -f chatapp-fe || true
-                    docker run -dt --name chatapp-fe -p 80:80 --env-file=${FRONTEND_ENV_FILE}  \ 
+                    docker run -dt --name chatapp-fe -p 80:80 --env-file=${FRONTEND_ENV_FILE} \
                         --network chatapp-network pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
                 }
