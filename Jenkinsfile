@@ -42,9 +42,9 @@ pipeline {
                 script {
                     sh """
                     docker container run -dt --name chatapp-db -p 5432:5432 postgres
-                    docker pull pulipatitejashwini/chatapp-be:${APP_VERSION} &&
+                    docker pull pulipatitejashwini/chatapp-be:${APP_VERSION} 
                     docker container run -dt --name chatapp-be -p 8081:8080 pulipatitejashwini/chatapp-be:${APP_VERSION}
-                    docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION} &&
+                    docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION} 
                     docker container run -dt --name chatapp-fe -p 80:80 pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
                 }
