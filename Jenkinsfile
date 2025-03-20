@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        BACKEND_ENV_FILE = "backend/.environment"
-        FRONTEND_ENV_FILE = "frontend/.environment"
+        BACKEND_ENV_FILE = "backend/.env"
+        FRONTEND_ENV_FILE = "frontend/.env"
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
     }
 
