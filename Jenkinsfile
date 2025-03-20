@@ -2,6 +2,8 @@ pipeline {
     agent any
 
     environment {
+        DOCKER_IMAGE1 = "node:14"
+        DOCKER_IMAGE2 = "nginx"
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
     }
 
@@ -19,11 +21,22 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker build -t pulipatitejashwini-be:${APP_VERSION} backend/
-                    docker build -t pulipatitejashwini-fe:${APP_VERSION} frontend/
-                    docker login -u pulipatitejashwini -p Npnt@2412
-                    docker push pulipatitejashwini-be:${APP_VERSION}
-                    docker push pulipatitejashwini-fe:${APP_VERSION}
+                    docker build -t pulipatitejashwini/chatapp-be:${APP_VERSION} backend/
+                    docker build -t pulipatitejashwini/chatapp-fe:${APP_VERSION} frontend/
+
+                    // credentialsId: 'dockerhub-credentials' refers to the ID of the stored credentials in Jenkins.
+                    // usernameVariable: 'DOCKER_USER' stores the Docker Hub username in DOCKER_USER.
+                    // passwordVariable: 'DOCKER_PASS' stores the password in DOCKER_PASS.
+                    // sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    // echo $DOCKER_PASS prints the password (without displaying it in logs).
+                    // docker login -u $DOCKER_USER --password-stdin securely logs into Docker Hub using --password-stdin (recommended by Docker).
+
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) 
+                    {
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    }
+                    docker push pulipatitejashwini/chatapp-be:${APP_VERSION}
+                    docker push pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
                 }
             }
@@ -34,10 +47,10 @@ pipeline {
                 script {
                     sh """
                     docker container run -dt --name chatapp-db -p 5432:5432 postgres
-                    docker pull pulipatitejashwini-be:${APP_VERSION} &&
-                    docker container run -dt --name chatapp-be -p 8081:8080 pulipatitejashwini:${APP_VERSION}
-                    docker pull pulipatitejashwini-fe:${APP_VERSION} &&
-                    docker container run -dt --name chatapp-fe -p 80:80 pulipatitejashwini:${APP_VERSION}
+                    docker pull pulipatitejashwini/chatapp-be:${APP_VERSION} &&
+                    docker container run -dt --name chatapp-be -p 8081:8080 pulipatitejashwini/chatapp-be:${APP_VERSION}
+                    docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION} &&
+                    docker container run -dt --name chatapp-fe -p 80:80 pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
                 }
             }
