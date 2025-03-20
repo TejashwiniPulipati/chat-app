@@ -32,6 +32,7 @@ pipeline {
                     docker push pulipatitejashwini/chatapp-be:${APP_VERSION}
                     docker push pulipatitejashwini/chatapp-fe:${APP_VERSION}
                     """
+                    }
                 }
             }
         }
