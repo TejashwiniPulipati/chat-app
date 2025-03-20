@@ -2,10 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE1 = "node"
-        DOCKER_IMAGE2 = "nginx"
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
-        DOCKER_SERVER = "18.134.226.211"
     }
 
     stages {
@@ -36,12 +33,11 @@ pipeline {
             steps {
                 script {
                     sh """
-                    ssh ${DOCKER_SERVER} "
+                    docker container run -dt --name chatapp-db -p 5432:5432 postgres
                     docker pull pulipatitejashwini-be:${APP_VERSION} &&
-                    docker run -d --name chatapp-fe -p 8081:8080 ${DOCKER_IMAGE1}:${APP_VERSION}
-                    docker pull pulipatitejashwini-be:${APP_VERSION} &&
-                    docker run -d --name chatapp-fe -p 80:80 ${DOCKER_IMAGE2}:${APP_VERSION}
-                    "
+                    docker container run -dt --name chatapp-be -p 8081:8080 pulipatitejashwini:${APP_VERSION}
+                    docker pull pulipatitejashwini-fe:${APP_VERSION} &&
+                    docker container run -dt --name chatapp-fe -p 80:80 pulipatitejashwini:${APP_VERSION}
                     """
                 }
             }
