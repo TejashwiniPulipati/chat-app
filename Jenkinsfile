@@ -43,6 +43,7 @@ pipeline {
             steps {
                 script {
                     sh """
+                    docker ps --filter "network=chatapp-network" -q | xargs -r docker rm -f
                     docker network rm -f chatapp-network || true
                     docker network create chatapp-network || true
 
