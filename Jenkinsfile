@@ -26,11 +26,9 @@
                         
                         docker build -t pulipatitejashwini/myapp-fe:${APP_VERSION} frontend/
                         docker build -t pulipatitejashwini/myapp-be:${APP_VERSION} backend/
-                        docker build -t pulipatitejashwini/myapp-db:${APP_VERSION} database/
 
                         docker push pulipatitejashwini/myapp-fe:${APP_VERSION}
                         docker push pulipatitejashwini/myapp-be:${APP_VERSION}
-                        docker push pulipatitejashwini/myapp-db:${APP_VERSION}
                         """
                     }
                 }
@@ -52,7 +50,7 @@
                         -e POSTGRES_USER=postgres \
                         -e POSTGRES_PASSWORD=app12345 \
                         -e POSTGRES_DB=myappdb \
-                        --network ${NETWORK_NAME} pulipatitejashwini/myapp-db:${APP_VERSION}
+                        --network ${NETWORK_NAME} postgres
 
                     # Start Backend Container
                     docker pull pulipatitejashwini/myapp-be:${APP_VERSION}
