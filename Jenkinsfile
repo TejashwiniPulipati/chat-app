@@ -1,8 +1,9 @@
-pipeline {
+ pipeline {
     agent any
 
     environment {
         REGISTRY_CREDENTIALS = "dockerhub-credentials"
+        NETWORK_NAME = "myapp-network"
     }
 
     stages {
@@ -11,27 +12,26 @@ pipeline {
                 script {
                     def packageJson = readJSON file: 'frontend/package.json'
                     env.APP_VERSION = packageJson.version
-                    echo "${APP_VERSION}"
+                    echo "App Version: ${APP_VERSION}"
                 }
             }
         }
-        stage('Build and Push Docker Image') {
+
+        stage('Build and Push Docker Images') {
             steps {
                 script {
-                    // credentialsId: 'dockerhub-credentials' refers to the ID of the stored credentials in Jenkins.
-                    // usernameVariable: 'DOCKER_USER' stores the Docker Hub username in DOCKER_USER.
-                    // passwordVariable: 'DOCKER_PASS' stores the password in DOCKER_PASS.
-                    // sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                    // echo $DOCKER_PASS prints the password (without displaying it in logs).
-                    // docker login -u $DOCKER_USER --password-stdin securely logs into Docker Hub using --password-stdin (recommended by Docker).
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker build -t pulipatitejashwini/chatapp-be:${APP_VERSION} backend/
-                    docker build -t pulipatitejashwini/chatapp-fe:${APP_VERSION} frontend/
-                    docker push pulipatitejashwini/chatapp-be:${APP_VERSION}
-                    docker push pulipatitejashwini/chatapp-fe:${APP_VERSION}
-                    """
+                    withCredentials([usernamePassword(credentialsId: REGISTRY_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        
+                        docker build -t pulipatitejashwini/myapp-fe:${APP_VERSION} frontend/
+                        docker build -t pulipatitejashwini/myapp-be:${APP_VERSION} backend/
+                        docker build -t pulipatitejashwini/myapp-db:${APP_VERSION} database/
+
+                        docker push pulipatitejashwini/myapp-fe:${APP_VERSION}
+                        docker push pulipatitejashwini/myapp-be:${APP_VERSION}
+                        docker push pulipatitejashwini/myapp-db:${APP_VERSION}
+                        """
                     }
                 }
             }
@@ -41,27 +41,31 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker ps --filter "network=chatapp-network" -q | xargs -r docker rm -f
-                    docker network rm -f chatapp-network || true
-                    docker network create chatapp-network || true
+                    # Stop and remove old containers in the network
+                    docker ps --filter "network=${NETWORK_NAME}" -q | xargs -r docker rm -f
+                    docker network rm ${NETWORK_NAME} || true
+                    docker network create ${NETWORK_NAME} || true
 
-                    docker container rm -f chatapp-db || true
-                    docker run -dt --name chatapp-db -p 5432:5432 \
+                    # Start Database Container
+                    docker container rm -f myapp-db || true
+                    docker run -dt --name myapp-db -p 5432:5432 \
                         -e POSTGRES_USER=postgres \
                         -e POSTGRES_PASSWORD=app12345 \
-                        -e POSTGRES_DB=chatappdb \
-                        --network chatapp-network postgres
+                        -e POSTGRES_DB=myappdb \
+                        --network ${NETWORK_NAME} pulipatitejashwini/myapp-db:${APP_VERSION}
 
-                    docker pull pulipatitejashwini/chatapp-be:${APP_VERSION}
-                    docker container rm -f chatapp-be || true
-                    docker run -dt --name chatapp-be -p 8081:8080 \
-                        -e DATABASE_URL="postgresql://postgres:app12345@chatapp-db:5432/chatappdb" \
-                        --network chatapp-network pulipatitejashwini/chatapp-be:${APP_VERSION}
+                    # Start Backend Container
+                    docker pull pulipatitejashwini/myapp-be:${APP_VERSION}
+                    docker container rm -f myapp-be || true
+                    docker run -dt --name myapp-be -p 8081:8080 \
+                        -e DATABASE_URL="postgresql://postgres:app12345@myapp-db:5432/myappdb" \
+                        --network ${NETWORK_NAME} pulipatitejashwini/myapp-be:${APP_VERSION}
 
-                    docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION}
-                    docker container rm -f chatapp-fe || true
-                    docker run -dt --name chatapp-fe -p 80:80 \
-                        --network chatapp-network pulipatitejashwini/chatapp-fe:${APP_VERSION}
+                    # Start Frontend Container
+                    docker pull pulipatitejashwini/myapp-fe:${APP_VERSION}
+                    docker container rm -f myapp-fe || true
+                    docker run -dt --name myapp-fe -p 80:80 \
+                        --network ${NETWORK_NAME} pulipatitejashwini/myapp-fe:${APP_VERSION}
                     """
                 }
             }
