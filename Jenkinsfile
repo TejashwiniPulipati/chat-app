@@ -55,6 +55,7 @@ pipeline {
                     docker pull pulipatitejashwini/chatapp-be:${APP_VERSION}
                     docker container rm -f chatapp-be || true
                     docker run -dt --name chatapp-be -p 8081:8080 \
+                        -e DATABASE_URL="postgresql://postgres:app12345@chatapp-db:5432/chatappdb" \
                         --network chatapp-network pulipatitejashwini/chatapp-be:${APP_VERSION}
 
                     docker pull pulipatitejashwini/chatapp-fe:${APP_VERSION}
